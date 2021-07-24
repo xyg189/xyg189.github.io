@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <id>https://xyg189.github.io</id>
+    <title>XYG&apos;s Blog</title>
+    <updated>2021-07-24T09:59:20.768Z</updated>
+    <generator>https://github.com/jpmonette/feed</generator>
+    <link rel="alternate" href="https://xyg189.github.io"/>
+    <link rel="self" href="https://xyg189.github.io/atom.xml"/>
+    <subtitle>不忘初心</subtitle>
+    <logo>https://xyg189.github.io/images/avatar.png</logo>
+    <icon>https://xyg189.github.io/favicon.ico</icon>
+    <rights>All rights reserved 2021, XYG&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[使用 CodeIgniter 4 开发 GeminusAdmin（一）]]></title>
+        <id>https://xyg189.github.io/post/geminusadmin-1/</id>
+        <link href="https://xyg189.github.io/post/geminusadmin-1/">
+        </link>
+        <updated>2021-07-24T07:06:27.000Z</updated>
+        <content type="html"><![CDATA[<p>GeminusAdmin 是一个基于 CodeIgniter 4 框架开发的通用后台管理系统，为应用项目后台管理系统的开发提供一个快速开始的基础平台。<br>
+CodeIgniter 是一套给 PHP 网站开发者使用的应用程序开发框架和工具包。它的目标是让你能够更快速的开发，它提供了日常任务中所需的大量类库，以及简单的接口和逻辑结构。通过减少代码量，CodeIgniter 让你更加专注于你的创造性工作。</p>
+<h2 id="开发使用的框架">开发使用的框架</h2>
+<ul>
+<li>后端：<a href="https://codeigniter.com">CodeIgniter 4</a></li>
+<li>前端：<a href="https://materializecss.com">Materialize 1.0.0</a></li>
+</ul>
+<h2 id="开发环境准备">开发环境准备</h2>
+<h3 id="安装-xampp">安装 XAMPP</h3>
+<p>XAMPP 是最流行的 PHP 开发环境，我们直接从<a href="https://www.apachefriends.org/index.html">官网</a>下载安装包。因为 CodeIgniter 4 需要 PHP 7.3 以上，所以直接根据你的操作系统下载对应的 PHP 7.4 的最新版本，目前看到的版本：<br>
+<img src="https://xyg189.github.io/post-images/1627112671273.png" alt="" loading="lazy"><br>
+直接运行命令安装：</p>
+<pre><code>chmod +x xampp-linux-x64-7.4.21-1-installer.run
+sudo ./xampp-linux-x64-7.4.21-1-installer.run
+</code></pre>
+<p>遇到是否安装开发文件，因为今后需要安装一些 PHP 扩展，所以选择<em>是</em><br>
+<code>XAMPP Developer Files [Y/n] :Y</code><br>
+待安装完成后，运行命令启动：<br>
+<code>sudo /opt/lampp/lampp start</code><br>
+现在打开浏览器访问http://localhost 就可以看到 XAMPP 已就绪了。<br>
+<img src="https://xyg189.github.io/post-images/1627115277246.png" alt="" loading="lazy"><br>
+点击页面右上角的 phpMyAdmin 菜单可以进入数据库维护页面。<br>
+<img src="https://xyg189.github.io/post-images/1627115289632.png" alt="" loading="lazy"><br>
+为了方便地使用各种命令，可以编辑 .bashrc 文件，添加 PATH 环境：<br>
+<code>export PATH=/opt/lampp/bin:$PATH</code></p>
+<h3 id="安装-composer">安装 Composer</h3>
+<p>Composer 是 PHP 的依赖管理工具，类似 nodejs 的 npm。访问<a href="https://getcomposer.org/download/">官网</a>的下载页面可以找到最新版本的下载链接。<br>
+我们在 /opt/apps 目录下直接用命令下载：<br>
+<code>wget https://getcomposer.org/download/2.1.5/composer.phar</code><br>
+确保 composer 可以运行：</p>
+<pre><code>chmod +x composer.phar
+./composer.phar help
+</code></pre>
+<h3 id="安装-codeigniter-4">安装 CodeIgniter 4</h3>
+<p>使用如下命令安装并在当前目录下生成 GeminusAdmin 的项目目录：<br>
+<code>./composer.phar create-project codeigniter4/appstarter GeminusAdmin</code><br>
+进入 /opt/apps/GeminusAdmin 目录可以看到整个项目的目录结构。<br>
+其中：</p>
+<ul>
+<li>app 目录是所有 PHP 程序代码的目录</li>
+<li>public 目录是 Web 应用程序的浏览器可以直接访问的目录，HTML、CSS、JS、图像等都放在这个目录</li>
+<li>writable 用于存放程序运行时需要写入的内容，比如缓存、日志、用户上传文件等</li>
+</ul>
+<p>接下来就可以启动应用了：</p>
+<pre><code>cp env .env
+php spark serve
+</code></pre>
+<p>这是使用 PHP 内置的 Web 服务器来运行本地开发环境，用浏览器打开 http://localhost:8080/ 就可以看到缺省的页面了：<br>
+<img src="https://xyg189.github.io/post-images/1627119532424.png" alt="" loading="lazy"></p>
+<p>大功告成，我们可以开始 GeminusAdmin 的开发了！</p>
+]]></content>
+    </entry>
+</feed>
