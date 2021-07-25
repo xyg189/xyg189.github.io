@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>使用 CodeIgniter 4 开发 GeminusAdmin（二） | XYG&#39;s Blog</title>
+<meta name="description" content="不忘初心">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1627211503326">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://xyg189.github.io">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1627211503326" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://xyg189.github.io">
+        <h1 class="site-title">XYG&#39;s Blog</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">使用 CodeIgniter 4 开发 GeminusAdmin（二）</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-07-25</span>
+            
+              <span>
+                <i class="icon-pricetags-outline"></i>
+                
+                  <a href="https://xyg189.github.io/tag/vxmAjqrha/">
+                    CodeIgniter
+                    
+                  </a>
+                
+              </span>
+            
+          </div>
+          <div class="post-content">
+            <p>GeminusAdmin 采用前后端不分离的开发方式，Web 页面由后端控制输出。因为主要关注 CodeIgniter 4 的使用，所以前端 JS 都采用原生语法，不使用第三方的框架。</p>
+<h2 id="geminusadmin-基本模块">GeminusAdmin 基本模块</h2>
+<p>根据后台管理系统常用包含的功能，GeminusAdmin 初步设定的模块：</p>
+<ul>
+<li>基本的安全，如限流、CSRF防护等</li>
+<li>登录、登出</li>
+<li>个人信息管理及修改密码</li>
+<li>用户账户管理，包括重置密码、账户启停用等</li>
+<li>基于角色的访问控制</li>
+<li>用户操作日志记录与浏览</li>
+<li>邮件队列管理</li>
+<li>系统运行配置参数管理，如发送邮件账号</li>
+<li>多语言支持</li>
+</ul>
+<h2 id="codeigniter-4-开发流程">CodeIgniter 4 开发流程</h2>
+<h3 id="启动入口">启动入口</h3>
+<p>整个项目通过 public 目录下的 index.php 文件启动。并且使用 Web 服务器的配置来控制除已存在的目录和文件外，其他的 HTTP 请求都会经过 index.php 文件。<br>
+public 目录下已提供 Apache 服务器使用的 .htaccess 文件：</p>
+<pre><code>RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]
+</code></pre>
+<h3 id="配置文件与环境变量">配置文件与环境变量</h3>
+<p>CodeIgniter 4 提供的每个类库都在 app/Config 目录下单独提供了一个同名的配置文件。<br>
+访问配置文件：</p>
+<pre><code>$config = config('Pager');
+// Access settings as object properties
+$pageSize = $config-&gt;perPage;
+</code></pre>
+<p>CodeIgniter 4 启动初始化时都会自动加载项目根目录下的 .env 文件，使用环境变量可以方便开发与部署，不需要改动 PHP 程序文件。开发环境里用到的密码、API Keys 或其它敏感数据都可以保存到 .env 文件里。<br>
+比如我们定义开发环境的数据连接信息：</p>
+<pre><code>database.default.hostname = localhost
+database.default.database = geminus
+database.default.username = geminus
+database.default.password = 12345678
+database.default.DBDriver = MySQLi
+</code></pre>
+<p><strong>重要： .env 文件不要加入版本控制系统里。</strong></p>
+<h3 id="mvc-模式">MVC 模式</h3>
+<p>和很多 Web 框架类似， CodeIgniter 框架也使用了模型、视图、控制器结构，即 MVC 模式，来组织代码文件。<br>
+<strong>模型</strong> 主要用来管理应用的数据, 根据应用的特殊业务规则获取数据。模型文件通常保存在 app/Models 目录下。<br>
+<strong>视图</strong> 是一个没有或者少量逻辑的简单的文件, 它只负责将数据展示给用户。视图文件通常存放在 app/Views 目录下。<br>
+<strong>控制器</strong> 主要承担了胶水代码的功能, 它主要在视图层和数据存储之间来回的处理并整合数据。控制器文件通常保存在 app/Controllers 目录下。</p>
+<h3 id="类库与辅助函数的使用">类库与辅助函数的使用</h3>
+<p>在 CodeIgniter 内提供的类库实际上都是以“服务”的形式呈现的。通过配置文件来定义了所有的类，我们可以如下方法来创建需要的实例：<br>
+<code>$parser = \Config\Services::parser();</code><br>
+或者使用便利的方法：<br>
+<code>$parser = service('parser');</code><br>
+ <br>
+CodeIgniter 的辅助函数不是以面向对象的方式实现的，而仅仅是简单的，程序化的函数方法。 每个辅助函数都只执行一个特定的功能，并与其他的函数不产生依赖。<br>
+直接通过以下方式加载：<br>
+<code>helper('text');</code><br>
+然后就可以直接调用此分类下的辅助函数了。<br>
+ <br>
+了解了基本的结构，接下来我们就逐步来实现 GeminusAdmin 的模块。<br>
+ </p>
+<hr>
+<p> <br>
+<img src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" alt="知识共享许可协议" loading="lazy">本作品采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>进行许可。</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://xyg189.github.io/post/geminusadmin-1/">
+              <h3 class="post-title">
+                下一篇：使用 CodeIgniter 4 开发 GeminusAdmin（一）
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">不忘初心</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xyg189.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>
