@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1627266113886">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1627386950452">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1627266113886" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1627386950452" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -102,7 +102,7 @@ CodeIgniter 是一套给 PHP 网站开发者使用的应用程序开发框架和
 <p>XAMPP 是最流行的 PHP 开发环境，我们直接从<a href="https://www.apachefriends.org/index.html">官网</a>下载安装包。因为 CodeIgniter 4 需要 PHP 7.3 以上，所以直接根据你的操作系统下载对应的 PHP 7.4 的最新版本，目前看到的版本：<br>
 <img src="https://xyg189.github.io/post-images/1627112671273.png" alt="" loading="lazy"><br>
 直接运行命令安装：</p>
-<pre><code>chmod +x xampp-linux-x64-7.4.21-1-installer.run
+<pre><code class="language-bash">chmod +x xampp-linux-x64-7.4.21-1-installer.run
 sudo ./xampp-linux-x64-7.4.21-1-installer.run
 </code></pre>
 <p>遇到是否安装开发文件，因为今后需要安装一些 PHP 扩展，所以选择<em>是</em><br>
@@ -117,16 +117,18 @@ sudo ./xampp-linux-x64-7.4.21-1-installer.run
 <code>export PATH=/opt/lampp/bin:$PATH</code></p>
 <h3 id="安装-composer">安装 Composer</h3>
 <p>Composer 是 PHP 的依赖管理工具，类似 nodejs 的 npm。访问<a href="https://getcomposer.org/download/">官网</a>的下载页面可以找到最新版本的下载链接。<br>
-我们在 /opt/apps 目录下直接用命令下载：<br>
-<code>wget https://getcomposer.org/download/2.1.5/composer.phar</code><br>
-确保 composer 可以运行：</p>
-<pre><code>chmod +x composer.phar
+我们在 /opt/apps 目录下直接用命令下载：</p>
+<pre><code class="language-bash">wget https://getcomposer.org/download/2.1.5/composer.phar
+</code></pre>
+<p>确保 composer 可以运行：</p>
+<pre><code class="language-bash">chmod +x composer.phar
 ./composer.phar help
 </code></pre>
 <h3 id="安装-codeigniter-4">安装 CodeIgniter 4</h3>
-<p>使用如下命令安装并在当前目录下生成 GeminusAdmin 的项目目录：<br>
-<code>./composer.phar create-project codeigniter4/appstarter GeminusAdmin</code><br>
-进入 /opt/apps/GeminusAdmin 目录可以看到整个项目的目录结构。<br>
+<p>使用如下命令安装并在当前目录下生成 GeminusAdmin 的项目目录：</p>
+<pre><code class="language-bash">./composer.phar create-project codeigniter4/appstarter GeminusAdmin
+</code></pre>
+<p>进入 /opt/apps/GeminusAdmin 目录可以看到整个项目的目录结构。<br>
 其中：</p>
 <ul>
 <li>app 目录是所有 PHP 程序代码的目录</li>
@@ -134,7 +136,7 @@ sudo ./xampp-linux-x64-7.4.21-1-installer.run
 <li>writable 用于存放程序运行时需要写入的内容，比如缓存、日志、用户上传文件等</li>
 </ul>
 <p>接下来就可以启动应用了：</p>
-<pre><code>cp env .env
+<pre><code class="language-bash">cp env .env
 php spark serve
 </code></pre>
 <p>这是使用 PHP 内置的 Web 服务器来运行本地开发环境，用浏览器打开 http://localhost:8080/ 就可以看到缺省的页面了：<br>

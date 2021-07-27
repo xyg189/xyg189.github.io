@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1627266113886">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1627386950452">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1627266113886" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1627386950452" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -117,13 +117,13 @@ RewriteRule ^(.*)$ index.php/$1 [L]
 <h3 id="配置文件与环境变量">配置文件与环境变量</h3>
 <p>CodeIgniter 4 提供的每个类库都在 app/Config 目录下单独提供了一个同名的配置文件。<br>
 访问配置文件：</p>
-<pre><code>$config = config('Pager');
+<pre><code class="language-php">$config = config('Pager');
 // Access settings as object properties
 $pageSize = $config-&gt;perPage;
 </code></pre>
 <p>CodeIgniter 4 启动初始化时都会自动加载项目根目录下的 .env 文件，使用环境变量可以方便开发与部署，不需要改动 PHP 程序文件。开发环境里用到的密码、API Keys 或其它敏感数据都可以保存到 .env 文件里。<br>
 比如我们定义开发环境的数据连接信息：</p>
-<pre><code>database.default.hostname = localhost
+<pre><code class="language-php">database.default.hostname = localhost
 database.default.database = geminus
 database.default.username = geminus
 database.default.password = 12345678
