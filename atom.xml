@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xyg189.github.io</id>
     <title>XYG&apos;s Blog</title>
-    <updated>2021-07-27T13:22:33.698Z</updated>
+    <updated>2021-07-31T08:40:29.292Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xyg189.github.io"/>
     <link rel="self" href="https://xyg189.github.io/atom.xml"/>
@@ -10,6 +10,122 @@
     <logo>https://xyg189.github.io/images/avatar.png</logo>
     <icon>https://xyg189.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, XYG&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[使用 CodeIgniter 4 开发 GeminusAdmin（四）]]></title>
+        <id>https://xyg189.github.io/post/geminusadmin-4/</id>
+        <link href="https://xyg189.github.io/post/geminusadmin-4/">
+        </link>
+        <updated>2021-07-31T06:58:01.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="添加-csrf-过滤器">添加 CSRF 过滤器</h2>
+<p>使用 CodeIgniter 4 的安全类以免受到跨站请求伪造（CSRF）的攻击。<br>
+打开 <strong>app/Config/Filters.php</strong> 文件，首先向过滤器添加别名：</p>
+<pre><code class="language-php">public $aliases = [
+    'csrf' =&gt; CSRF::class
+    ...
+];
+</code></pre>
+<p>再为 POST 方法添加 csrf 配置：</p>
+<pre><code class="language-php">public $methods = [
+    'post' =&gt; ['throttle', 'csrf']
+];
+</code></pre>
+<p>这样，所有的 POST 请求都需要验证令牌（tokens），默认情况下令牌会在每一次提交时重新生成，提供了更严格的安全机制。<br>
+<strong>.env</strong> 文件中的默认配置：</p>
+<pre><code>security.tokenName  = 'csrf_token_name'
+security.headerName = 'X-CSRF-TOKEN'
+security.cookieName = 'csrf_cookie_name'
+security.expires    = 7200
+security.regenerate = true
+security.redirect   = true
+security.samesite   = 'Lax'
+</code></pre>
+<p>有2个方法来获得令牌以便提交到后台验证：一个是 csrf_field()，可以在表单中生成隐藏字段<br>
+<code>&lt;input type=&quot;hidden&quot; name=&quot;{csrf_token}&quot; value=&quot;{csrf_hash}&quot;&gt;</code>，通过表单提交到后台；<br>
+另一个是 csrf_meta()，可以在 html 的 head 中生成<br>
+<code>&lt;meta name=&quot;{csrf_header}&quot; content=&quot;{csrf_hash}&quot;&gt;</code>，再通过定义的 http header <strong>X-CSRF-TOKEN</strong> 来提交到后台。<br>
+为了统一代码，GeminusAdmin 只使用 http header 来提交令牌。<br>
+<strong>重要：验证需要使用cookie，具体验证流程请看 vendor/codeigniter4/framework/system/Security/Security.php 文件的 verify() 方法。</strong></p>
+<h2 id="准备前端公共函数">准备前端公共函数</h2>
+<p>因为不使用第三放的 JS 框架，我们需要自己准备前端公共函数。创建 <strong>public/js/admin.js</strong> 文件，添加代码：</p>
+<pre><code class="language-js">function postData(url, data) {
+    let option = {
+        method: &quot;post&quot;,
+        body: data,
+        credentials: 'same-origin',
+        headers: {
+            &quot;Accept&quot;: &quot;application/json&quot;,
+            &quot;X-Requested-With&quot;: &quot;XMLHttpRequest&quot;
+        }
+    };
+    let meta = document.querySelector('meta[name=X-CSRF-TOKEN]');
+    if (meta) {
+        option.headers['X-CSRF-TOKEN'] = meta.getAttribute('content');
+    }
+
+    return fetch(url, option)
+    .then(function(response) {
+        if (! response.ok) {
+            switch (response.status) {
+                case 429:
+                    //限流
+                    return JSON.parse('{&quot;message&quot;:&quot;Too many requests. Please try again later.&quot;}');
+                case 403:
+                    //CSRF验证失败
+                    location.href = location.href;
+                default:
+                    let err = new Error('HTTP status code: ' + response.status);
+                    throw err;
+            }
+        }
+        
+        return response.json();
+    })
+}
+
+function getData(url, type) {
+    return fetch(url)
+        .then(function(response) {
+            return eval('response.' + type + '()');
+        })
+}
+</code></pre>
+<p>定义了 AJAX 需要用到的2个公共函数，可以看到 postData() 中通过读取 html 的 meta 添加了 <strong>X-CSRF-TOKEN</strong> 的 header。</p>
+<h2 id="准备页面公共视图模版">准备页面公共视图模版</h2>
+<p>创建 <strong>app/Views/header.php</strong> 文件，添加模版内容：</p>
+<pre><code class="language-php">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+    &lt;head&gt;
+        &lt;!--Import Google Icon Font--&gt;
+        &lt;link href=&quot;https://fonts.googleapis.com/icon?family=Material+Icons&quot; rel=&quot;stylesheet&quot;&gt;
+        &lt;!--Import materialize.css--&gt;
+        &lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css&quot;  media=&quot;screen,projection&quot;/&gt;
+
+        &lt;!--Let browser know website is optimized for mobile--&gt;
+        &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;/&gt;
+        &lt;?=isset($meta) ? $meta : ''?&gt;
+        &lt;?php foreach ($css as $item) : ?&gt;
+        &lt;link type=&quot;text/css&quot; rel=&quot;stylesheet&quot; href=&quot;&lt;?=$item?&gt;&quot;  media=&quot;screen,projection&quot;/&gt;
+        &lt;?php endforeach ?&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+
+</code></pre>
+<p>上面的 <code>&lt;?=isset($meta) ? $meta : ''?&gt;</code> 就是为 csrf_meta() 留的位置。<br>
+创建 <strong>app/Views/footer.php</strong> 文件，添加模版内容：</p>
+<pre><code class="language-php">    &lt;!--JavaScript at end of body for optimized loading--&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js&quot;&gt;&lt;/script&gt;
+    &lt;?php foreach ($js as $item) : ?&gt;
+    &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;?=$item?&gt;&quot;&gt;&lt;/script&gt;
+    &lt;?php endforeach ?&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p> </p>
+<hr>
+<p> <br>
+<img src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" alt="知识共享许可协议" loading="lazy">本作品由<a href="https://xyg189.github.io">XYG</a>采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>进行许可。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[使用 CodeIgniter 4 开发 GeminusAdmin（三）]]></title>
         <id>https://xyg189.github.io/post/geminusadmin-3/</id>
