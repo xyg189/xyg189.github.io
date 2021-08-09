@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xyg189.github.io</id>
     <title>XYG&apos;s Blog</title>
-    <updated>2021-07-31T08:40:29.292Z</updated>
+    <updated>2021-08-09T04:20:15.462Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xyg189.github.io"/>
     <link rel="self" href="https://xyg189.github.io/atom.xml"/>
@@ -10,6 +10,276 @@
     <logo>https://xyg189.github.io/images/avatar.png</logo>
     <icon>https://xyg189.github.io/favicon.ico</icon>
     <rights>All rights reserved 2021, XYG&apos;s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[使用 CodeIgniter 4 开发 GeminusAdmin（五）]]></title>
+        <id>https://xyg189.github.io/post/geminusadmin-5/</id>
+        <link href="https://xyg189.github.io/post/geminusadmin-5/">
+        </link>
+        <updated>2021-08-09T01:52:20.000Z</updated>
+        <content type="html"><![CDATA[<h2 id="创建登录功能">创建登录功能</h2>
+<h3 id="登录界面">登录界面</h3>
+<p>我们使用 Email 和密码来做登录验证。<br>
+新建登录视图文件 <strong>app/Views/login_view.php</strong></p>
+<pre><code class="language-html">&lt;main class=&quot;container row&quot;&gt;
+    &lt;div class=&quot;col l8 offset-l2 s12&quot;&gt;
+        &lt;h5&gt;Geminus Admin&lt;/h5&gt;
+        &lt;form method=&quot;POST&quot; action=&quot;/login/check&quot; class=&quot;row card-panel&quot; data-callback=&quot;location.href = '/admin/home'&quot;&gt;
+            &lt;div class=&quot;input-field col s12 center&quot;&gt;
+                &lt;h5&gt;Login&lt;/h5&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;input-field col s12&quot;&gt;
+                &lt;input id=&quot;email&quot; name=&quot;email&quot; type=&quot;text&quot; class=&quot;validate&quot; required&gt;
+                &lt;label for=&quot;email&quot;&gt;Email&lt;/label&gt;
+                &lt;span id=&quot;email_helper&quot; class=&quot;helper-text&quot; data-error=&quot;&quot;&gt;&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;input-field col s12&quot;&gt;
+                &lt;input id=&quot;password&quot; name=&quot;password&quot; type=&quot;password&quot; class=&quot;validate&quot; required&gt;
+                &lt;label for=&quot;password&quot;&gt;Password&lt;/label&gt;
+                &lt;span id=&quot;password_helper&quot; class=&quot;helper-text&quot; data-error=&quot;&quot;&gt;&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;input-field col s12 center&quot;&gt;
+                &lt;input type=&quot;submit&quot; class=&quot;btn&quot; value=&quot;Submit&quot;&gt;
+            &lt;/div&gt;
+        &lt;/form&gt;
+        &lt;p&gt;Do not support Internet Explorer, please use modern browser.&lt;/p&gt;
+    &lt;/div&gt;
+&lt;/main&gt;
+</code></pre>
+<p>新建登录控制器文件 <strong>app/Controllers/Login.php</strong></p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Controllers;
+
+use App\Models\UserModel;
+
+class Login extends BaseController
+{
+	protected $helpers = ['form', 'text'];
+
+	public function index()
+	{
+		$data['meta'] = csrf_meta();
+		$data['css'] = [];
+		$data['js'][] = base_url('js/admin.js?v=').random_string('basic');
+
+		//csrf只开启post方法，所以要自己发送cookie
+		$security = \Config\Services::security();
+		$security-&gt;verify($this-&gt;request);
+		echo view('header', $data);
+		echo view('login_view');
+		echo view('footer', $data);
+	}
+
+</code></pre>
+<p><strong>app/Views/header.php</strong>、<strong>app/Views/footer.php</strong> 和 <strong>public/js/admin.js</strong> 是之前已经创建了的公共文件。<br>
+然后配置路由，编辑 <strong>app/Config/Routes.php</strong> 文件：</p>
+<pre><code class="language-php">$routes-&gt;setDefaultController('Login');
+......
+$routes-&gt;get('/', 'Login::index');
+</code></pre>
+<p>这样就可以访问 <code>http://localhost:8080/</code> 来显示登录界面了：<br>
+<img src="https://xyg189.github.io/post-images/1628474885978.png" alt="" loading="lazy"></p>
+<h3 id="添加-auth-库">添加 Auth 库</h3>
+<p>所有认证（authentication）和授权（authorization）相关的处理都放到 Auth 库来实现，创建 <strong>app/Libraries/Auth.php</strong> 文件：</p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Libraries;
+
+use App\Models\UserModel;
+
+Class Auth {
+
+    protected $user;
+    protected $userModel;
+
+    public function checkUser($rules = [])
+	{
+		$errors = [
+			'_email' =&gt; 'Invalid email or password.',
+			'_block' =&gt; 'Account is blocked, please contact system administrator.',
+			'_password' =&gt; 'Invalid email or password.'
+		];
+		
+		$db = \Config\Database::connect();
+        $this-&gt;userModel = new UserModel($db);
+
+		foreach ($rules as $rule) {
+            $callable = is_callable($rule);
+			$param = FALSE;
+			if (! $callable &amp;&amp; preg_match('/(.*?)\[(.*)\]/', $rule, $match))
+			{
+				$rule  = $match[1];
+				$param = $match[2];
+			}
+
+			if ($this-&gt;$rule($param) === FALSE) {
+				return $errors[$rule];
+			}
+		}
+
+		return $this-&gt;user;
+	}
+
+    private function _email($email = NULL)
+	{
+        if (! empty($email)) {
+		    $this-&gt;user = $this-&gt;userModel-&gt;where('user_email', $email)-&gt;first();
+		    return ! empty($this-&gt;user);
+        }
+
+        return FALSE;
+	}
+
+	private function _block()
+	{
+        if (! empty($this-&gt;user))
+		    return empty($this-&gt;user['blocked_at']);
+
+        return FALSE;
+	}
+
+	private function _password($password = NULL)
+	{
+        if (! empty($password)) {
+		    return password_verify($password, $this-&gt;user['user_password']);
+        }
+
+        return FALSE;
+	}
+
+}
+</code></pre>
+<p>这里定义了 <strong>checkUser()</strong> 方法，来验证需要处理的验证规则。对于登录验证，我们定义了3条验证规则：</p>
+<ol>
+<li><strong>_email</strong>，验证输入的 Email 是否存在</li>
+<li><strong>_block</strong>，验证账号是否被屏蔽</li>
+<li><strong>_password</strong> 验证输入的密码是否正确</li>
+</ol>
+<p>为了实现整个验证流程，这些规则需要有先后顺序要求，并且如果第一个规则验证通过就需要返回用户的数据以供后续规则使用。</p>
+<h3 id="添加用户数据模型">添加用户数据模型</h3>
+<p>认证库需要访问用户数据，新建 <strong>app/Models/UserModel.php</strong> 模型文件：</p>
+<pre><code class="language-php">&lt;?php namespace App\Models;
+
+use CodeIgniter\Model;
+
+class UserModel extends Model
+{
+    protected $table      = 'user';
+    protected $primaryKey = 'user_id';
+
+    protected $returnType     = 'array';
+    protected $useSoftDeletes = true;
+
+    protected $allowedFields = ['user_key', 'user_name', 'user_email', 'user_password', 'role', 'avatar', 'blocked_at'];
+
+    protected $useTimestamps = true;
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+}
+</code></pre>
+<p>CodeIgniter 提供的模型基类已默认内置了很多功能：</p>
+<ul>
+<li>自动数据库连接</li>
+<li>基本的 CRUD 方法</li>
+<li>自动分页</li>
+<li>数据过滤</li>
+</ul>
+<p>我们自己只需定义好基本的信息就可以直接使用了，免去了每个模型的重复操作代码。</p>
+<h3 id="登录认证与处理错误信息">登录认证与处理错误信息</h3>
+<p>为控制器 <strong>app/Controllers/Login.php</strong> 添加认证方法：</p>
+<pre><code class="language-php">    public function check()
+	{
+		$output = ['result'=&gt;FALSE, 'token_name'=&gt;csrf_header(), 'token_value'=&gt;csrf_hash()];
+
+		if (! $this-&gt;validate([
+			'email'=&gt;'trim|required|valid_email',
+			'password'=&gt;'trim|required|min_length[8]'
+			])) {
+			$output['message'] = $this-&gt;validator-&gt;getErrors();
+        } else {
+			$auth = service('auth');
+			$result = $auth-&gt;checkUser([&quot;_email[{$this-&gt;request-&gt;getPost('email')}]&quot;, '_block', &quot;_password[{$this-&gt;request-&gt;getPost('password')}]&quot;]);
+			if (! is_array($result)) {
+				$output['message'] = $result;
+			} else {
+				$user = $result;
+				$this-&gt;session = \Config\Services::session();
+				$newdata = [
+					'user_id'    =&gt; $user['user_id'],
+                    'user_name'  =&gt; $user['user_name'],
+                    'user_email' =&gt; $user['user_email'],
+					'role'       =&gt; $user['role'],
+					'avatar'     =&gt; $user['avatar'],
+                    'logged_in'  =&gt; TRUE
+                ];
+                $this-&gt;session-&gt;set($newdata);
+				$output['result'] = TRUE;
+			}
+        }
+
+		$this-&gt;response-&gt;setContentType('application/json');
+		$this-&gt;response-&gt;setBody(json_encode($output))-&gt;send();
+	}
+</code></pre>
+<p>我们先使用 CodeIgniter 自带的验证类来验证用户的输入符合基本的要求，然后使用我们自己的 Auth 库来进行登录验证。所有错误信息都通过 JSON 格式的 message 带出。<br>
+由于表单的 AJAX 提交是个普遍的操作，所以把这个代码放到 <strong>public/js/admin.js</strong> 公共文件中：</p>
+<pre><code class="language-js">document.addEventListener('DOMContentLoaded', function() {
+
+    M.AutoInit();
+
+    let elems = document.querySelectorAll('form');
+
+    elems.forEach(function(form) {
+        if (form.method == 'post')
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+        
+            postData(form.action, new FormData(form))
+                .then(function(myJson) {
+                    //重置CSRF参数
+                    let meta = document.querySelector('meta[name='+myJson.token_name+']');
+                    meta.setAttribute('content', myJson.token_value);
+                    
+                    if (typeof(myJson.message) == 'string')
+                        M.toast({html: myJson.message, classes: myJson.result ? '' : 'red lighten-1'});
+
+                    if (! myJson.result) {
+                        console.error(myJson.message)
+                        //显示form出错信息
+                        if (myJson.message instanceof Object)
+                            for (let id in myJson.message) {
+                                let el = form.querySelector('#'+id);
+                                let helper = form.querySelector('#'+id+'_helper');
+                                helper.dataset.error = myJson.message[id];
+                                if (el.parentNode.classList.contains('select-wrapper'))
+                                    el.parentNode.classList.add('invalid');
+                                else
+                                    el.classList.add('invalid');
+                            }
+                    } else {
+                        let delay = myJson.message ? 2000 : 50;
+                        setTimeout(function() {
+                            let fn = form.dataset.callback;
+                            fn &amp;&amp; eval(fn);
+                        }, delay);
+                    }
+                })
+                .catch(error =&gt; console.error(error))
+        })
+    })
+})
+</code></pre>
+<p>如果是 CodeIgniter 自带的验证类的错误信息直接显示在对于的输入字段下面，如果是 AUTH 库的出错信息则通过 toast 效果提示。<br>
+<img src="https://xyg189.github.io/post-images/1628481050630.png" alt="" loading="lazy"></p>
+<p><strong>重要：由于 CSRF 每次提交后都会生成新的 token，所以验证失败后需要更新 html 里的 meta 数据，这样才能在下次提交表单时带上正确的 token。</strong></p>
+<p>最后，如果认证通过就用 Form 表单上定义的方法 <code>data-callback=&quot;location.href = '/admin/home'&quot;</code> 跳转页面到管理后台的首页。</p>
+<p> </p>
+<hr>
+<p> <br>
+<img src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" alt="知识共享许可协议" loading="lazy">本作品由<a href="https://xyg189.github.io">XYG</a>采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>进行许可。</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[使用 CodeIgniter 4 开发 GeminusAdmin（四）]]></title>
         <id>https://xyg189.github.io/post/geminusadmin-4/</id>
