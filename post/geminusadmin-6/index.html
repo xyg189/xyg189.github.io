@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1628933110210">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1628933461037">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1628933110210" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1628933461037" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -91,8 +91,8 @@
           </div>
           <div class="post-content">
             <h2 id="geminusadmin-后台管理框架">GeminusAdmin 后台管理框架</h2>
-<h3 id="访问控制过滤器">访问控制过滤器</h3>
-<p>只有登录成功的用户才能访问后台管理的各个页面，所以后台管理页面需要进行登录状态验证。这个工作就适合放在过滤器中实现。首先编辑配置文件 <strong>app/Config/Filters.php</strong> 添加过滤器名称：</p>
+<h3 id="登录状态过滤器">登录状态过滤器</h3>
+<p>只有登录成功的用户才能访问后台管理的各个页面，所有后台管理页面都需要进行登录状态验证。这个工作就适合放在过滤器中实现。首先编辑配置文件 <strong>app/Config/Filters.php</strong> 添加过滤器名称：</p>
 <pre><code class="language-php">public $aliases = [
     ...
     'isLoggedIn' =&gt; \App\Filters\LoggedIn::class,

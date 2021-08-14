@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xyg189.github.io</id>
     <title>XYG&apos;s Blog</title>
-    <updated>2021-08-14T09:25:13.603Z</updated>
+    <updated>2021-08-14T09:31:25.333Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xyg189.github.io"/>
     <link rel="self" href="https://xyg189.github.io/atom.xml"/>
@@ -17,8 +17,8 @@
         </link>
         <updated>2021-08-14T07:22:43.000Z</updated>
         <content type="html"><![CDATA[<h2 id="geminusadmin-后台管理框架">GeminusAdmin 后台管理框架</h2>
-<h3 id="访问控制过滤器">访问控制过滤器</h3>
-<p>只有登录成功的用户才能访问后台管理的各个页面，所以后台管理页面需要进行登录状态验证。这个工作就适合放在过滤器中实现。首先编辑配置文件 <strong>app/Config/Filters.php</strong> 添加过滤器名称：</p>
+<h3 id="登录状态过滤器">登录状态过滤器</h3>
+<p>只有登录成功的用户才能访问后台管理的各个页面，所有后台管理页面都需要进行登录状态验证。这个工作就适合放在过滤器中实现。首先编辑配置文件 <strong>app/Config/Filters.php</strong> 添加过滤器名称：</p>
 <pre><code class="language-php">public $aliases = [
     ...
     'isLoggedIn' =&gt; \App\Filters\LoggedIn::class,
