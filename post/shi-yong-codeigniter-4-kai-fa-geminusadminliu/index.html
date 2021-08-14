@@ -1,0 +1,360 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    
+<meta charset="utf-8" >
+
+<title>使用 CodeIgniter 4 开发 GeminusAdmin（六） | XYG&#39;s Blog</title>
+<meta name="description" content="不忘初心">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1628932925724">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+<link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+
+
+
+  </head>
+  <body>
+    <div id="app" class="main">
+      <div class="site-header-container">
+  <div class="site-header">
+    <div class="left">
+      <a href="https://xyg189.github.io">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1628932925724" alt="" width="32px" height="32px">
+      </a>
+      <a href="https://xyg189.github.io">
+        <h1 class="site-title">XYG&#39;s Blog</h1>
+      </a>
+    </div>
+    <div class="right">
+      <transition name="fade">
+        <i class="icon" :class="{ 'icon-close-outline': menuVisible, 'icon-menu-outline': !menuVisible }" @click="menuVisible = !menuVisible"></i>
+      </transition>
+    </div>
+  </div>
+</div>
+
+<transition name="fade">
+  <div class="menu-container" style="display: none;" v-show="menuVisible">
+    <div class="menu-list">
+      
+        
+          <a href="/" class="menu purple-link">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="menu purple-link">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="menu purple-link">
+            标签
+          </a>
+        
+      
+    </div>
+  </div>
+</transition>
+
+
+      <div class="content-container">
+        <div class="post-detail">
+          
+          <h2 class="post-title">使用 CodeIgniter 4 开发 GeminusAdmin（六）</h2>
+          <div class="post-info post-detail-info">
+            <span><i class="icon-calendar-outline"></i> 2021-08-14</span>
+            
+          </div>
+          <div class="post-content">
+            <h2 id="geminusadmin-后台管理框架">GeminusAdmin 后台管理框架</h2>
+<h3 id="访问控制过滤器">访问控制过滤器</h3>
+<p>只有登录成功的用户才能访问后台管理的各个页面，所以后台管理页面需要进行登录状态验证。这个工作就适合放在过滤器中实现。首先编辑配置文件 <strong>app/Config/Filters.php</strong> 添加过滤器名称：</p>
+<pre><code class="language-php">public $aliases = [
+    ...
+    'isLoggedIn' =&gt; \App\Filters\LoggedIn::class,
+    ...
+];
+</code></pre>
+<p>并且指定后台所有控制器需要应用这个过滤器：</p>
+<pre><code class="language-php">public $filters = [
+	'isLoggedIn' =&gt; ['before' =&gt; ['admin/*']]
+];
+</code></pre>
+<p>接下来创建实际的过滤器代码 <strong>app/Filters/LoggedIn.php</strong>：</p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Filters;
+
+use CodeIgniter\Filters\FilterInterface;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Config\Services;
+
+class LoggedIn implements FilterInterface
+{
+    /**
+     * 检查用户是否已登录
+     *
+     * @param RequestInterface|\CodeIgniter\HTTP\IncomingRequest $request
+     * @param array|null                                         $arguments
+     *
+     * @return mixed
+     */
+    public function before(RequestInterface $request, $arguments = null)
+    {
+        $auth = service('auth');
+
+        if (! $auth-&gt;isLoggedIn()) {
+            return redirect()-&gt;to(base_url('login'));
+        }
+    }
+
+    //--------------------------------------------------------------------
+
+    /**
+     * We don't have anything to do here.
+     *
+     * @param RequestInterface|\CodeIgniter\HTTP\IncomingRequest $request
+     * @param ResponseInterface|\CodeIgniter\HTTP\Response       $response
+     * @param array|null                                         $arguments
+     *
+     * @return mixed
+     */
+    public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
+    {
+        // ...
+    }
+}
+</code></pre>
+<p>因为我们使用 Auth 库来处理所有的认证相关功能，所以在 <strong>app/Libraries/Auth.php</strong> 中添加对应方法：</p>
+<pre><code class="language-php">    public function isLoggedIn()
+    {
+        $session = \Config\Services::session();
+        if (isset($_SESSION['logged_in'])) {
+            return $_SESSION['logged_in'];
+        }
+
+        return FALSE;
+    }
+</code></pre>
+<p>验证不成功就跳转到登录页面。</p>
+<h3 id="基本页面布局">基本页面布局</h3>
+<p>一般的后台管理系统页面布局都会包含常见的界面组件：导航条和侧边栏。所以我们新建一个 <strong>app/Views/admin/menu.php</strong> 来保存这2个通用组件的代码，每个页面都包含 <strong>app/Views/header.php</strong> 、<strong>app/Views/footer.php</strong> 和这个文件。<br>
+导航条内容包含当前页面的标题、当前登录用户的头像与昵称、退出等内容：</p>
+<pre><code class="language-html">    &lt;div class=&quot;navbar-fixed&quot;&gt;
+        &lt;nav class=&quot;white&quot;&gt;
+            &lt;div class=&quot;nav-wrapper&quot;&gt;
+                &lt;a href=&quot;&lt;?=current_url()?&gt;&quot; class=&quot;brand-logo grey-text text-darken-4&quot;&gt;&lt;?=$page_title?&gt;&lt;/a&gt;
+                &lt;ul id=&quot;nav-mobile&quot; class=&quot;right hide-on-med-and-down&quot;&gt;
+                    &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/profile')?&gt;&quot;&gt;
+&lt;?php if (empty($_SESSION['avatar'])) : ?&gt;
+                        &lt;span class=&quot;avatar&quot; data-name=&quot;&lt;?=mb_substr($_SESSION['user_name'], 0, 1)?&gt;&quot;&gt;&lt;/span&gt;
+&lt;?php else : ?&gt;
+                        &lt;img src=&quot;&lt;?=base_url('images/avatar/'.$_SESSION['avatar'])?&gt;&quot; class=&quot;avatar circle&quot;&gt;
+&lt;?php endif ?&gt;
+                        &amp;nbsp;&amp;nbsp;&lt;?=esc($_SESSION['user_name'])?&gt;&lt;/a&gt;&lt;/li&gt;
+                    &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('logout')?&gt;&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;exit_to_app&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;/ul&gt;
+                &lt;a href=&quot;#&quot; data-target=&quot;slide-out&quot; class=&quot;sidenav-trigger&quot;&gt;&lt;i class=&quot;material-icons black-text&quot;&gt;menu&lt;/i&gt;&lt;/a&gt;
+            &lt;/div&gt;
+        &lt;/nav&gt;
+    &lt;/div&gt;
+</code></pre>
+<p>侧边栏内容包含了所有系统功能的链接：</p>
+<pre><code class="language-html">    &lt;ul id=&quot;slide-out&quot; class=&quot;sidenav sidenav-fixed blue accent-2&quot;&gt;
+        &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/home')?&gt;&quot; class=&quot;logo-container&quot;&gt;Geminus Admin&lt;i class=&quot;material-icons left&quot;&gt;featured_video&lt;/i&gt;&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/event')?&gt;&quot;&gt;Event&lt;/a&gt;&lt;/li&gt;
+        &lt;li class=&quot;no-padding&quot;&gt;
+            &lt;ul class=&quot;collapsible&quot;&gt;
+&lt;?php if ($_SESSION['role'] == 'superadmin') : ?&gt;
+                &lt;li class=&quot;waves-effect&quot;&gt;
+                    &lt;a class=&quot;collapsible-header&quot;&gt;System&lt;i class=&quot;material-icons chevron right&quot;&gt;chevron_left&lt;/i&gt;&lt;/a&gt;
+                    &lt;div class=&quot;collapsible-body&quot;&gt;
+                        &lt;ul&gt;
+                            &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/account')?&gt;&quot; class=&quot;waves-effect&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;supervisor_account&lt;/i&gt;Account&lt;/a&gt;&lt;/li&gt;
+                            &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/syslog/mail')?&gt;&quot; class=&quot;waves-effect&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;view_list&lt;/i&gt;Mail Queue&lt;/a&gt;&lt;/li&gt;
+                            &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/syslog/user')?&gt;&quot; class=&quot;waves-effect&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;view_list&lt;/i&gt;User Log&lt;/a&gt;&lt;/li&gt;
+                        &lt;/ul&gt;
+                    &lt;/div&gt;
+                &lt;/li&gt;
+&lt;?php endif ?&gt;
+                &lt;li class=&quot;waves-effect&quot;&gt;
+                    &lt;a class=&quot;collapsible-header&quot;&gt;Personal&lt;i class=&quot;material-icons chevron right&quot;&gt;chevron_left&lt;/i&gt;&lt;/a&gt;
+                    &lt;div class=&quot;collapsible-body&quot;&gt;
+                        &lt;ul&gt;
+                            &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('admin/profile')?&gt;&quot; class=&quot;waves-effect&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;account_circle&lt;/i&gt;Settings&lt;/a&gt;&lt;/li&gt;
+                            &lt;li&gt;&lt;a href=&quot;&lt;?=base_url('logout')?&gt;&quot; class=&quot;waves-effect&quot;&gt;&lt;i class=&quot;material-icons&quot;&gt;exit_to_app&lt;/i&gt;Logout&lt;/a&gt;&lt;/li&gt;
+                        &lt;/ul&gt;
+                    &lt;/div&gt;
+                &lt;/li&gt;
+            &lt;/ul&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt;
+</code></pre>
+<h3 id="基础控制器">基础控制器</h3>
+<p>基础控制器是包含一些共用的功能，方便统一使用。所有后台管理的控制器都是继承的这个基础控制器。CodeIgniter 4 已包含了一个基础控制器的例子，所以我们直接复制 <strong>app/Controllers/BaseController.php</strong> 到 <strong>app/Controllers/admin/AdminController.php</strong>，并添加了需要使用的辅助函数和数据库连接。</p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Controllers\Admin;
+
+use CodeIgniter\Controller;
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Class BaseController
+ *
+ * BaseController provides a convenient place for loading components
+ * and performing functions that are needed by all your controllers.
+ * Extend this class in any new controllers:
+ *     class Home extends BaseController
+ *
+ * For security be sure to declare any new methods as protected or private.
+ */
+
+class AdminController extends Controller
+{
+	/**
+	 * An array of helpers to be loaded automatically upon
+	 * class instantiation. These helpers will be available
+	 * to all other controllers that extend BaseController.
+	 *
+	 * @var array
+	 */
+	protected $helpers = ['form', 'text'];
+	protected $db;
+	
+	/**
+	 * Constructor.
+	 *
+	 * @param RequestInterface  $request
+	 * @param ResponseInterface $response
+	 * @param LoggerInterface   $logger
+	 */
+	public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+	{
+		// Do Not Edit This Line
+		parent::initController($request, $response, $logger);
+
+		//--------------------------------------------------------------------
+		// Preload any models, libraries, etc, here.
+		//--------------------------------------------------------------------
+		$this-&gt;db = \Config\Database::connect();
+	}
+}
+</code></pre>
+<h3 id="home-页面">Home 页面</h3>
+<p>登录成功后就进入 Home 页面，首先创建控制器文件 <strong>app/Controllers/admin/Home.php</strong>：</p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Controllers\Admin;
+
+class Home extends AdminController
+{
+	public function index()
+	{
+		$data['css'][] = base_url('css/admin.css?v=').random_string('basic');
+		$data['js'][] = base_url('js/admin.js?v=').random_string('basic');
+		$data['page_title'] = 'Home';
+
+		echo view('header', $data);
+		echo view('admin/menu', $data);
+		echo view('footer', $data);
+	}
+}
+</code></pre>
+<p>Home 页面非常简单，目前还没有其它功能，界面效果如图：<br>
+<img src="https://xyg189.github.io/post-images/1628930119309.png" alt="" loading="lazy"></p>
+<h3 id="登出功能">登出功能</h3>
+<p>登出和登录功能相对应，登出不需要界面，只有控制器文件 <strong>app/Controllers/Logout.php</strong>：</p>
+<pre><code class="language-php">&lt;?php
+
+namespace App\Controllers;
+
+class Logout extends BaseController
+{
+    public function index()
+	{
+        $this-&gt;session = \Config\Services::session();
+        if (isset($_SESSION['logged_in'])) {
+            $_SESSION['logged_in'] = FALSE;
+        }
+        return redirect()-&gt;to(base_url('login'));
+    }
+}
+</code></pre>
+<p>就是把之前登录成功的 <strong>logged_in</strong> 状态设为 FALSE，并跳转到登录页面。</p>
+<p> </p>
+<hr>
+<p> <br>
+<img src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" alt="知识共享许可协议" loading="lazy">本作品由<a href="https://xyg189.github.io">XYG</a>采用<a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>进行许可。</p>
+
+          </div>
+        </div>
+
+        
+          <div class="next-post">
+            <a class="purple-link" href="https://xyg189.github.io/post/geminusadmin-5/">
+              <h3 class="post-title">
+                下一篇：使用 CodeIgniter 4 开发 GeminusAdmin（五）
+              </h3>
+            </a>
+          </div>
+          
+      </div>
+
+      
+
+      <div class="site-footer">
+  <div class="slogan">不忘初心</div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://xyg189.github.io/atom.xml" target="_blank">RSS</a>
+</div>
+
+
+    </div>
+    <script type="application/javascript">
+
+hljs.initHighlightingOnLoad()
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+</script>
+
+
+
+
+  </body>
+</html>

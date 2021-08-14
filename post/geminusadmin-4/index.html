@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1628482555721">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1628932925724">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1628482555721" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1628932925724" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -166,7 +166,7 @@ function getData(url, type) {
 <p>定义了 AJAX 需要用到的2个公共函数，可以看到 postData() 中通过读取 html 的 meta 添加了 <strong>X-CSRF-TOKEN</strong> 的 header。</p>
 <h2 id="准备页面公共视图模版">准备页面公共视图模版</h2>
 <p>创建 <strong>app/Views/header.php</strong> 文件，添加模版内容：</p>
-<pre><code class="language-php">&lt;!DOCTYPE html&gt;
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
     &lt;head&gt;
         &lt;!--Import Google Icon Font--&gt;
@@ -186,7 +186,7 @@ function getData(url, type) {
 </code></pre>
 <p>上面的 <code>&lt;?=isset($meta) ? $meta : ''?&gt;</code> 就是为 csrf_meta() 留的位置。<br>
 创建 <strong>app/Views/footer.php</strong> 文件，添加模版内容：</p>
-<pre><code class="language-php">    &lt;!--JavaScript at end of body for optimized loading--&gt;
+<pre><code class="language-html">    &lt;!--JavaScript at end of body for optimized loading--&gt;
     &lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js&quot;&gt;&lt;/script&gt;
     &lt;?php foreach ($js as $item) : ?&gt;
     &lt;script type=&quot;text/javascript&quot; src=&quot;&lt;?=$item?&gt;&quot;&gt;&lt;/script&gt;
