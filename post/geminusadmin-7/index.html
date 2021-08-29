@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1630207768280">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1630207806027">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1630207768280" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1630207806027" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -95,7 +95,7 @@
 文件名没有特别要求，语言文件的内容就是如下形式：</p>
 <pre><code class="language-php">'language_key' =&gt; 'The actual message to be shown.'
 </code></pre>
-<p>在程序中直接使用 <code>lang('文件名.language_key')</code> 就能得到当前语言下对应的语言字符串内容了。如果没有找到 '文件名.language_key'，则直接返回 '文件名.language_key'。</p>
+<p>在程序中直接使用 <code>lang('文件名.language_key')</code> 就能得到当前语言下对应的语言字符串内容了。如果没有找到 '文件名.language_key'，则直接显示 '文件名.language_key'。</p>
 <h3 id="配置语言识别">配置语言识别</h3>
 <p>默认的语言/地区属性，可以通过 <strong>app/Config/App.php</strong> 进行设置：</p>
 <pre><code class="language-php">public $defaultLocale = 'en';

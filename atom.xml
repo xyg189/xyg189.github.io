@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xyg189.github.io</id>
     <title>XYG&apos;s Blog</title>
-    <updated>2021-08-29T03:29:45.351Z</updated>
+    <updated>2021-08-29T03:30:09.988Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xyg189.github.io"/>
     <link rel="self" href="https://xyg189.github.io/atom.xml"/>
@@ -21,7 +21,7 @@
 文件名没有特别要求，语言文件的内容就是如下形式：</p>
 <pre><code class="language-php">'language_key' =&gt; 'The actual message to be shown.'
 </code></pre>
-<p>在程序中直接使用 <code>lang('文件名.language_key')</code> 就能得到当前语言下对应的语言字符串内容了。如果没有找到 '文件名.language_key'，则直接返回 '文件名.language_key'。</p>
+<p>在程序中直接使用 <code>lang('文件名.language_key')</code> 就能得到当前语言下对应的语言字符串内容了。如果没有找到 '文件名.language_key'，则直接显示 '文件名.language_key'。</p>
 <h3 id="配置语言识别">配置语言识别</h3>
 <p>默认的语言/地区属性，可以通过 <strong>app/Config/App.php</strong> 进行设置：</p>
 <pre><code class="language-php">public $defaultLocale = 'en';
