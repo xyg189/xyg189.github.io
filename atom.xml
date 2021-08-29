@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xyg189.github.io</id>
     <title>XYG&apos;s Blog</title>
-    <updated>2021-08-29T03:30:09.988Z</updated>
+    <updated>2021-08-29T03:35:21.692Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xyg189.github.io"/>
     <link rel="self" href="https://xyg189.github.io/atom.xml"/>
@@ -194,7 +194,26 @@ class Login extends BaseController
 			'_block' =&gt; 'Geminus.errorAuthBlocked',
 			'_password' =&gt; 'Geminus.errorAuthInput'
 		];
-        ...
+        
+        $db = \Config\Database::connect();
+        $this-&gt;userModel = new UserModel($db);
+
+		foreach ($rules as $rule) {
+            $callable = is_callable($rule);
+			$param = FALSE;
+			if (! $callable &amp;&amp; preg_match('/(.*?)\[(.*)\]/', $rule, $match))
+			{
+				$rule  = $match[1];
+				$param = $match[2];
+			}
+
+			if ($this-&gt;$rule($param) === FALSE) {
+				return lang($errors[$rule]);
+			}
+		}
+
+		return $this-&gt;user;
+	}
 </code></pre>
 <p>我们再用默认简体中文语言的浏览器打开 <strong>localhost:8080</strong>，就可以看到 GeminusAdmin 的登录界面已经显示简体中文了。CodeIgniter 自带的表单出错信息也可以正常显示简体中文。<br>
 <img src="https://xyg189.github.io/post-images/1630207152649.png" alt="" loading="lazy"><br>

@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
 
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1630207806027">
+<link rel="shortcut icon" href="https://xyg189.github.io/favicon.ico?v=1630208061881">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
 <link rel="stylesheet" href="https://xyg189.github.io/styles/main.css">
 
@@ -30,7 +30,7 @@
   <div class="site-header">
     <div class="left">
       <a href="https://xyg189.github.io">
-        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1630207806027" alt="" width="32px" height="32px">
+        <img class="avatar" src="https://xyg189.github.io/images/avatar.png?v=1630208061881" alt="" width="32px" height="32px">
       </a>
       <a href="https://xyg189.github.io">
         <h1 class="site-title">XYG&#39;s Blog</h1>
@@ -268,7 +268,26 @@ class Login extends BaseController
 			'_block' =&gt; 'Geminus.errorAuthBlocked',
 			'_password' =&gt; 'Geminus.errorAuthInput'
 		];
-        ...
+        
+        $db = \Config\Database::connect();
+        $this-&gt;userModel = new UserModel($db);
+
+		foreach ($rules as $rule) {
+            $callable = is_callable($rule);
+			$param = FALSE;
+			if (! $callable &amp;&amp; preg_match('/(.*?)\[(.*)\]/', $rule, $match))
+			{
+				$rule  = $match[1];
+				$param = $match[2];
+			}
+
+			if ($this-&gt;$rule($param) === FALSE) {
+				return lang($errors[$rule]);
+			}
+		}
+
+		return $this-&gt;user;
+	}
 </code></pre>
 <p>我们再用默认简体中文语言的浏览器打开 <strong>localhost:8080</strong>，就可以看到 GeminusAdmin 的登录界面已经显示简体中文了。CodeIgniter 自带的表单出错信息也可以正常显示简体中文。<br>
 <img src="https://xyg189.github.io/post-images/1630207152649.png" alt="" loading="lazy"><br>
